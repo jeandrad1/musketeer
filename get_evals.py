@@ -4,17 +4,23 @@ from openpyxl import Workbook
 import os
 import time
 import json
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+
 from collections import defaultdict, Counter
 
 API_BASE = "https://api.intra.42.fr/v2"
 TOKEN_URL = f"{API_BASE}/oauth/token"
+BASE_URL = "https://api.intra.42.fr"
 
 uid = os.getenv("UID")
 secret = os.getenv("SECRET")
 
 # CONFIGURATION
-ORIGIN_FILE = "users/users.txt"
-DESTINY_FILE = "results/results.xlsx"
+ORIGIN_FILE = "kickoff_actual.txt"
+DESTINY_FILE = "resultados_kickoff_noviembre.xlsx"
 
 # Colors
 class Color:
@@ -43,14 +49,24 @@ def safe_request(method, url, headers=None, params=None, data=None, retries=5, d
     raise Exception("Too many connection errors.")
 
 # Access Token
-def get_token():
-    resp = safe_request('post', TOKEN_URL, data={
+def get_token(uid, secret):
+    print("get_token -> UID:", uid)
+    print("get_token -> SECRET mask:", (secret[:4] + "..." + secret[-4:]) if secret else None)
+
+    res = requests.post(f"{BASE_URL}/oauth/token", data={
         "grant_type": "client_credentials",
         "client_id": uid,
-        "client_secret": secret
-    })
-    resp.raise_for_status()
-    return resp.json()["access_token"]
+        "client_secret": secret,
+    }, timeout=10)
+
+    if res.status_code != 200:
+        print("get_token status:", res.status_code)
+        try:
+            print("get_token response json:", res.json())
+        except Exception:
+            print("get_token raw response:", repr(res.text))
+    res.raise_for_status()
+    return res.json()["access_token"]
 
 # User data (ID and cursus level)
 def get_user_data(username, headers):
@@ -161,7 +177,7 @@ def export_alerts_report():
     ])
 
     count = 0
-    token = get_token()
+    token = get_token(uid, secret)
     headers = {"Authorization": f"Bearer {token}"}
 
     for evaluator, counter in evaluations_map.items():
@@ -211,7 +227,7 @@ def export_alerts_report():
 # MAIN 
 def main():
     try:
-        token = get_token()
+        token = get_token(uid, secret)
         headers = {"Authorization": f"Bearer {token}"}
 
         with open(ORIGIN_FILE, "r", encoding="utf-8") as f:

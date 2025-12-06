@@ -122,7 +122,6 @@ def process_received_evaluations(evals, evaluated, headers):
         corrector = e.get("corrector", {})
         evaluator_login = corrector.get("login")
 
-        # --- CORRECCIÓN AQUÍ ---
         # Extraer el nombre del proyecto de la estructura anidada
         project_name = "N/A"
         team = e.get("team")
@@ -184,8 +183,6 @@ def check_alerts(login):
     if not alerts_found:
         print(f"\n{Color.GREEN}No significant evaluation patterns detected for {login}.{Color.RESET}")
 
-
-# MAIN
 def main():
     if len(sys.argv) != 2:
         print(f"{Color.YELLOW}Usage: python {sys.argv[0]} <login>{Color.RESET}")

@@ -59,14 +59,14 @@ def get_locations(token, login):
     return all_locations
 
 
-def calcular_horas(locations):
+def calc_hours(locations):
     total_seconds = 0
     for loc in locations:
         if loc.get("end_at") and loc.get("begin_at"):
             try:
-                inicio = parser.parse(loc["begin_at"])
-                fin = parser.parse(loc["end_at"])
-                total_seconds += (fin - inicio).total_seconds()
+                initial = parser.parse(loc["begin_at"])
+                end = parser.parse(loc["end_at"])
+                total_seconds += (end - initial).total_seconds()
             except Exception:
                 # skip malformed dates
                 continue
@@ -77,7 +77,7 @@ def main():
     # Print only, do not write files
     logins = leer_logins()
     if not logins:
-        print("El archivo 'users/users.txt' está vacío o no existe.")
+        print("No users/users.txt found or file is empty.")
         return
 
     if not UID or not SECRET:
@@ -89,22 +89,21 @@ def main():
     try:
         token = get_token(UID, SECRET)
     except Exception as e:
-        print(f"Error obteniendo token: {e}")
+        print(f"Error getting token: {e}")
         return
 
-    resultados = []
+    results = []
     for login in logins:
-        print(f"Procesando '{login}'…")
+        print(f"Processing '{login}'…")
         locations = get_locations(token, login)
-        horas = calcular_horas(locations)
-        resultados.append((login, horas))
-        print(f"  → {login}: {horas:.2f} horas")
+        hours = calc_hours(locations)
+        results.append((login, hours))
+        print(f"  → {login}: {hours:.2f} hours")
 
-    # Mostrar ranking ordenado de mayor a menor en la terminal
-    resultados_ordenados = sorted(resultados, key=lambda x: x[1], reverse=True)
-    print("\n=== RANKING (mayor a menor) ===")
-    for i, (login, horas) in enumerate(resultados_ordenados, 1):
-        print(f"{i:2d}. {login}: {horas:.2f} horas")
+    sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
+    print("\nRANKING")
+    for i, (login, hours) in enumerate(sorted_results, 1):
+        print(f"{i:2d}. {login}: {hours:.2f} hours")
 
 
 if __name__ == "__main__":
