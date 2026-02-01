@@ -13,33 +13,33 @@ def get_all_paginated(endpoint, params=None):
     all_data = []
     page = 1
     while True:
-        params.update({"page": page, "per_page": 100})  # Hasta 100 por página
+        params.update({"page": page, "per_page": 100})  # 100 items per page
         response = requests.get(endpoint, headers=HEADERS, params=params)
 
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
-            print(f"❌ Error en la página {page}: {response.status_code}")
+            print(f"Error in page {page}: {response.status_code}")
             break
 
         page_data = response.json()
         if not page_data:
-            break  # No hay más páginas
+            break  # No more pages
         all_data.extend(page_data)
 
-        print(f"✅ Página {page} descargada con {len(page_data)} elementos.")
+        print(f"Page {page} with {len(page_data)} elements.")
         page += 1
 
     return all_data
 
-def guardar_en_json(nombre_archivo, datos):
-    with open(nombre_archivo, "w", encoding="utf-8") as f:
-        json.dump(datos, f, ensure_ascii=False, indent=4)
+def save_in_json(file_name, data):
+    with open(file_name, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 def main():
-    todos_los_campus = get_all_paginated(BASE_URL)
-    guardar_en_json("campus_completo.json", todos_los_campus)
-    print(f"\n📁 Guardado en 'campus_completo.json' con {len(todos_los_campus)} registros.")
+    all_campus = get_all_paginated(BASE_URL)
+    save_in_json("campus_completo.json", all_campus)
+    print(f"\nSaved in 'campus_completo.json' with {len(all_campus)} registered.")
 
 if __name__ == "__main__":
     main()
