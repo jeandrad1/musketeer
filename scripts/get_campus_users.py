@@ -36,11 +36,9 @@ def get_token(uid, secret):
     res.raise_for_status()
     return res.json()["access_token"]
 
+# Consults the user profile and extracts their grade from cursus 21 (42cursus).
+# Returns the grade or None if it doesn't exist.
 def get_user_grade(login, token):
-    """
-    Consulta el perfil del usuario y extrae su grade del cursus 21 (42cursus).
-    Devuelve el grade o None si no existe.
-    """
     url = f"{API_BASE}/users/{login}"
     headers = {"Authorization": f"Bearer {token}"}
     try:
@@ -50,23 +48,21 @@ def get_user_grade(login, token):
         res.raise_for_status()
         data = res.json()
         
-        # buscar el grade en cursus_users donde cursus_id == 21
+        # search the grade in cursus_users for cursus_id 21
         for cu in data.get("cursus_users", []):
             if cu.get("cursus_id") == 21:
-                return cu.get("grade")  # puede ser "Cadet", "Transcender", etc.
+                return cu.get("grade")  # can be Cadet, Transcender, etc...
     except Exception:
         pass
     return None
 
+# Goes through all pages of the campus endpoint and returns
+# a list of active logins created after minimun_date.
 def fetch_campus_users(token):
-    """
-    Recorre todas las páginas del endpoint /campus/37/users y devuelve
-    lista de logins activos creados después de fecha_minima.
-    """
     page = 1
     per_page = 100
     all_active_logins = []
-    fecha_minima = datetime.fromisoformat("2022-01-08T00:00:00+00:00")
+    minimum_date = datetime.fromisoformat("2022-01-08T00:00:00+00:00")
     
     headers = {"Authorization": f"Bearer {token}"}
     
@@ -79,7 +75,7 @@ def fetch_campus_users(token):
         response = requests.get(CAMPUS_API_URL, headers=headers, params=params)
 
         if response.status_code != 200:
-            print(f"Error en la página {page}: {response.status_code}")
+            print(f"Error in page {page}: {response.status_code}")
             break
 
         data = response.json()
@@ -93,12 +89,12 @@ def fetch_campus_users(token):
             created_at_str = user.get("created_at")
             if created_at_str:
                 created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
-                if created_at > fecha_minima:
+                if created_at > minimum_date:
                     login = user.get("login")
                     if login:
                         all_active_logins.append(login)
 
-        print(f"Página {page} procesada: {len(active_users)} usuarios activos encontrados.")
+        print(f"Page {page} processed: {len(active_users)} active users found.")
         page += 1
     
     return all_active_logins
@@ -107,13 +103,13 @@ def main():
     try:
         token = get_token(uid, secret)
     except Exception as e:
-        print(f"[ERROR] No se pudo obtener token: {e}")
+        print(f"[ERROR] Cannot obtain token: {e}")
         return
 
-    print("\n=== Obteniendo usuarios del campus 37 ===")
+    print("\n---Obtaining users ffrom campus--")
     all_active_logins = fetch_campus_users(token)
     
-    print(f"\nObteniendo grades para {len(all_active_logins)} usuarios...")
+    print(f"\Obtaining grades for {len(all_active_logins)} users ...")
     results = []
     for i, login in enumerate(all_active_logins, 1):
         print(f"[{i}/{len(all_active_logins)}] {login} ...", end=" ")
@@ -135,7 +131,7 @@ def main():
         for login, grade in results:
             f.write(f"{login}\t{grade}\n")
 
-    print(f"\nTotal de logins guardados: {len(results)} en {OUTPUT_FILE}")
+    print(f"\Total of logins saved: {len(results)} in {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()
