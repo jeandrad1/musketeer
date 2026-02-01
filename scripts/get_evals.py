@@ -7,7 +7,7 @@ import json
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 from collections import defaultdict, Counter
 
@@ -194,11 +194,11 @@ def export_alerts_report():
 
             porcentaje = times / total_evals if total_evals > 0 else 0
             if total_evals > 11:
-                penalizacion = 5 if porcentaje > 0.10 else -2
+                penalization = 5 if porcentaje > 0.10 else -2
             else:
-                penalizacion = 0;
+                penalization = 0;
 
-            adjusted_times = times + penalizacion
+            adjusted_times = times + penalization
 
             if adjusted_times > threshold:
                 level_corrected = user_levels.get(evaluated)

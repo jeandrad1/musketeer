@@ -13,7 +13,7 @@ secret = os.getenv("SECRET")
 
 # CONFIGURATION
 ORIGIN_FILE = "users/users.txt"
-DESTINY_FILE = "results/prueba.xlsx"
+DESTINY_FILE = "results/test.xlsx"
 
 # Colors
 class Color:
@@ -54,7 +54,7 @@ def get_user_data(username, headers):
     data = resp.json()
     level = None
     for cursus in data.get("cursus_users", []):
-        if cursus.get("cursus_id") == 21:  # This can be replaced by a pool identifier if needed
+        if cursus.get("cursus_id") == 21:  # This needs to be adapted for the piscine cursus ID
             level = cursus.get("level")
             time.sleep(1)
             break
@@ -95,17 +95,17 @@ def process_evaluations(evals, evaluator, headers):
     for e in evals:
         final_mark = e.get("final_mark")
         team = e.get("team", {})
-        project_name = "Desconocido"
+        project_name = "Unknowwn"
         if "project" in team and isinstance(team["project"], dict):
-            project_name = team["project"].get("name", "Desconocido")
+            project_name = team["project"].get("name", "Unknowwn")
         elif "project_gitlab_path" in team:  # path as project name
             project_name = team["project_gitlab_path"].split("/")[-1]
         cursus_id = e.get("cursus_id", "N/A")
 
-        # --- DEBUG PRINT: Mostrar cada proyecto que se está procesando ---
+        # --- DEBUG PRINT: Show every project found ---
         print(f"[DEBUG] Found project: '{project_name}' for evaluator '{evaluator}'")
 
-        # --- DEBUG PRINT: Confirmar que un proyecto Shell se está procesando ---
+        # --- DEBUG PRINT: Confirm a sheel project is being procesed ---
         if "C Piscine Shell" in project_name:
             print(f"[DEBUG] {Color.GREEN}Processing Shell project: '{project_name}'{Color.RESET}")
 
@@ -125,7 +125,7 @@ def process_evaluations(evals, evaluator, headers):
                 if final_mark is not None:
                     delta = 1 if final_mark >= 50 else -1
                     evaluations_map[evaluator][evaluated] += delta
-                    # --- DEBUG PRINT: Mostrar detalles de la evaluación contabilizada ---
+                    # --- DEBUG PRINT: Show the details of an evaluation ---
                     print(f"{Color.CYAN}   [PROCESSED] Evaluator: {evaluator} -> Evaluated: {evaluated} | Project: '{project_name}' | Mark: {final_mark} | Delta: {delta}{Color.RESET}")
                 else:
                     print(f"{Color.YELLOW}   [SKIPPED] No final grade for {evaluated} (Project: '{project_name}', Cursus ID: {cursus_id}){Color.RESET}")

@@ -14,14 +14,14 @@ HEADERS = {
 
 
 def get_user_id(login):
-    print(f"→ Obteniendo ID de usuario '{login}'…")
+    print(f"Obtaining user id of '{login}'…")
     res = requests.get(f"{API_BASE}/users/{login}", headers=HEADERS)
     res.raise_for_status()
     return res.json()["id"]
 
 
 def get_all_evaluations(user_id):
-    print("→ Descargando todas las evaluaciones completadas…")
+    print("Downloading all completed evaluations…")
     evaluations = []
     page = 1
 
@@ -47,25 +47,25 @@ def get_all_evaluations(user_id):
 
 
 def filter_received(evaluations, user_id):
-    print("→ Filtrando las que te han hecho a ti…")
+    print("Filtering received evaluations…")
     return [e for e in evaluations if e.get("user", {}).get("id") == user_id]
 
 
 def save_to_csv(evaluations, filename="received_evaluations.csv"):
-    print(f"→ Guardando en '{filename}'…")
+    print(f"Saved in '{filename}'…")
     with open(filename, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Fecha", "Evaluador", "Proyecto", "Resultado"])
+        writer.writerow(["Date", "Evaluator", "Proyect", "Result"])
 
         for e in evaluations:
             date = e.get("created_at", "")[:10]
-            corrector = e.get("corrector", {}).get("login", "")
+            corrector = e.get("evaluator", {}).get("login", "")
             project = e.get("team", {}).get("project_gitlab_path", "")
             passed = e.get("final_mark", None)
-            result = "✅" if passed and passed > 0 else "❌"
+            result = "Success" if passed and passed > 0 else "Failure"
             writer.writerow([date, corrector, project, result])
 
-    print(f"✅ Guardadas {len(evaluations)} evaluaciones recibidas.")
+    print(f"Saved {len(evaluations)} evaluations.")
 
 
 def main():
@@ -75,9 +75,9 @@ def main():
         received = filter_received(all_evals, user_id)
         save_to_csv(received)
     except requests.HTTPError as e:
-        print(f"⚠️ Error HTTP {e.response.status_code}: {e.response.text}")
+        print(f"HTTP Error {e.response.status_code}: {e.response.text}")
     except Exception as e:
-        print(f"⚠️ Error: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":

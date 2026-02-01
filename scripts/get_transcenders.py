@@ -6,21 +6,21 @@ import requests
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 API_BASE = "https://api.intra.42.fr/v2"
 BASE_URL = "https://api.intra.42.fr"
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
 
-INPUT_FILES = ["users/all_Malaga_users.txt"]
+INPUT_FILES = ["users/all_campus_users.txt"]
 OUTPUT_FILE = "users_transcender_and_alumni.txt"
 
 REQUEST_DELAY = 0.5  # delay between requests to avoid rate limiting
 
 def get_token(uid, secret):
     if not uid or not secret:
-        raise RuntimeError("UID y SECRET deben estar en el .env")
+        raise RuntimeError("UID y SECRET should be on .env")
     res = requests.post(f"{BASE_URL}/oauth/token", data={
         "grant_type": "client_credentials",
         "client_id": uid,
@@ -37,14 +37,8 @@ def read_logins():
                 return [l.strip() for l in f if l.strip()]
     return []
 
+# Receives the parsed JSON of the user and returns (is_transcender, is_alumni).
 def detect_transcender_and_alumni(data):
-    """
-    Recibe el JSON ya parseado del usuario y devuelve (is_transcender, is_alumni).
-    Lógica:
-      - Transcender: alguna entrada en 'cursus_users' con 'cursus_id' == 21 (o slug '42cursus')
-        y 'grade' conteniendo 'transcender' (case-insensitive).
-      - Alumni: campo top-level 'alumni?' es True o 'alumnized_at' no es None.
-    """
     is_transcender = False
     is_alumni = False
 
@@ -92,7 +86,7 @@ def main():
     try:
         token = get_token(UID, SECRET)
     except Exception as e:
-        print(f"[ERROR] no se pudo obtener token: {e}")
+        print(f"[ERROR] cannot get TOKEN: {e}")
         return
 
     results = []
@@ -108,7 +102,7 @@ def main():
                 if is_alumni:
                     labels.append("Alumni")
                 results.append((login, ",".join(labels)))
-                print("FOUND ->", ",".join(labels))
+                print("FOUND :", ",".join(labels))
             else:
                 print("no")
         except requests.HTTPError as he:
@@ -122,7 +116,7 @@ def main():
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             for login, labels in results:
                 f.write(f"{login}\t{labels}\n")
-    print(f"\nHecho. {len(results)} usuarios escritos en {OUTPUT_FILE}.")
+    print(f"\Done. {len(results)} Outer Core users registered in {OUTPUT_FILE}.")
 
 if __name__ == "__main__":
     main()

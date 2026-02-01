@@ -113,10 +113,10 @@ def process_evaluations(evals, evaluator, headers):
         final_mark = e.get("final_mark")
 
         team = e.get("team", {})
-        project_name = "Desconocido"
+        project_name = "Unknown"
 
         if "project" in team and isinstance(team["project"], dict):
-            project_name = team["project"].get("name", "Desconocido")
+            project_name = team["project"].get("name", "Unknown")
         elif "project_gitlab_path" in team:
             # path as project name, possible solution
             project_name = team["project_gitlab_path"].split("/")[-1]
@@ -176,13 +176,13 @@ def export_alerts_report():
             if times <= 1:
                 continue
 
-            porcentaje = times / total_evals if total_evals > 0 else 0
+            percent = times / total_evals if total_evals > 0 else 0
             if total_evals > 11:
-                penalizacion = 5 if porcentaje > 0.10 else -2
+                penalization = 5 if percent > 0.10 else -2
             else:
-                penalizacion = 0;
+                penalization = 0;
 
-            adjusted_times = times + penalizacion
+            adjusted_times = times + penalization
 
             if adjusted_times > threshold:
                 level_corrected = user_levels.get(evaluated)
@@ -198,7 +198,7 @@ def export_alerts_report():
                 ws.append([
                     evaluator, eval_level,
                     evaluated, level_corrected,
-                    times, f"{porcentaje:.0%}", adjusted_times
+                    times, f"{percent:.0%}", adjusted_times
                 ])
                 count += 1
 

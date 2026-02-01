@@ -11,7 +11,7 @@ TOKEN_URL = f"{API_BASE}/oauth/token"
 uid = os.getenv("UID")
 secret = os.getenv("SECRET")
 
-# Colores para la terminal
+# Colors
 class Color:
     RESET = "\033[0m"
     RED = "\033[91m"
@@ -20,12 +20,12 @@ class Color:
     CYAN = "\033[96m"
     WHITE = "\033[97m"
 
-# Estructuras
-evaluations_map = defaultdict(Counter)  # evaluado -> {evaluator -> times}
+# Structs
+evaluations_map = defaultdict(Counter)  # evaluator-> {evaluated -> times}
 user_levels = {}  # login -> level
 
 
-# Petición segura con reintentos y manejo de rate limit
+# Safe request with delays and rate limit handling
 def safe_request(method, url, headers=None, params=None, data=None, retries=5, delay=3):
     for attempt in range(retries):
         try:
@@ -37,24 +37,24 @@ def safe_request(method, url, headers=None, params=None, data=None, retries=5, d
             else:
                 raise ValueError("Unsupported HTTP method")
 
-            # Manejo de Rate Limit (429)
+            # Handling of rate limiting
             if response.status_code == 429:
                 retry_after = int(response.headers.get("Retry-After", delay))
                 print(f"{Color.YELLOW}   Rate limit hit. Waiting {retry_after} seconds...{Color.RESET}")
                 time.sleep(retry_after)
-                continue  # Reintentar la petición
+                continue  # Retry the request
 
-            response.raise_for_status()  # Lanza error para otros códigos 4xx/5xx
+            response.raise_for_status()  # Error for 4xx and 5xx responses
             return response
 
         except requests.exceptions.RequestException as e:
             print(f"{Color.YELLOW}   Reattempt {attempt + 1}/{retries} due to connection error: {e}{Color.RESET}")
-            time.sleep(delay * (attempt + 1)) # Aumentar delay en cada reintento
+            time.sleep(delay * (attempt + 1)) # Increment the delay with each try
 
     raise Exception("API request failed after multiple retries.")
 
 
-# Obtener token de acceso
+# Obtain access token
 def get_token():
     resp = safe_request('post', TOKEN_URL, data={
         "grant_type": "client_credentials",
@@ -64,7 +64,7 @@ def get_token():
     return resp.json()["access_token"]
 
 
-# Datos del usuario (ID y nivel del cursus)
+# User data (ID and cursus level)
 def get_user_data(username, headers):
     resp = safe_request('get', f"{API_BASE}/users/{username}", headers=headers)
     data = resp.json()
@@ -77,7 +77,7 @@ def get_user_data(username, headers):
     return data.get("id"), level
 
 
-# Obtener evaluaciones que un usuario ha recibido
+# Get evals that the user has received from others
 def get_received_evaluations(user_id, headers):
     page = 1
     all_evals = []
@@ -98,12 +98,11 @@ def get_received_evaluations(user_id, headers):
 
         all_evals.extend(data)
         page += 1
-        time.sleep(0.5)  # Pequeña pausa entre páginas
-
+        time.sleep(0.5)  # small delay between pages
     return all_evals
 
 
-# Procesar evaluaciones recibidas para contabilizarlas
+# Process received evaluations for counting
 def process_received_evaluations(evals, evaluated, headers):
     if evaluated not in user_levels:
         try:
@@ -122,7 +121,7 @@ def process_received_evaluations(evals, evaluated, headers):
         corrector = e.get("corrector", {})
         evaluator_login = corrector.get("login")
 
-        # Extraer el nombre del proyecto de la estructura anidada
+        # Extract project name for logging
         project_name = "N/A"
         team = e.get("team")
         if team and team.get("project") and team["project"].get("name"):
@@ -158,7 +157,7 @@ def check_alerts(login):
         if total_evals == 0:
             continue
 
-        # Cálculo de porcentajes y penalizaciones
+        # Formula for alert detection
         evaluators = list(counter.keys())
         values = np.array(list(counter.values()))
         percentages = values / total_evals if total_evals > 0 else np.zeros_like(values)

@@ -7,7 +7,7 @@ uid = os.getenv("UID")
 secret = os.getenv("SECRET")
 
 if not uid or not secret:
-    raise SystemExit("uid o SECRET no están definidos.")
+    raise SystemExit("UID or SECRET are not defined.")
 
 try:
     client = BackendApplicationClient(client_id=uid)
@@ -17,15 +17,15 @@ try:
         client_id=uid,
         client_secret=secret
     )
-    print("Token recibido:")
+    print("Token received:")
     print(token["access_token"])
 
 except requests.exceptions.ConnectionError:
-    print("Error de conexión.")
+    print("Connection error")
 except requests.exceptions.HTTPError as e:
-    print(f"Error HTTP: {e.response.status_code}")
+    print(f"HTTP Error: {e.response.status_code}")
     print(e.response.text)
 except Exception as e:
-    print(f"Error inesperado: {type(e).__name__} - {e}")
+    print(f"Unexpected error: {type(e).__name__} - {e}")
 
 # .\.venv\Scripts\activate.bat

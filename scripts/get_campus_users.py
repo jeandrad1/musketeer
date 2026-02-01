@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 API_BASE = "https://api.intra.42.fr/v2"
 BASE_URL = "https://api.intra.42.fr"
@@ -13,8 +13,8 @@ BASE_URL = "https://api.intra.42.fr"
 uid = os.getenv("UID")
 secret = os.getenv("SECRET")
 
-CAMPUS_API_URL = "https://api.intra.42.fr/v2/campus/37/users"
-OUTPUT_FILE = "users/all_Malaga_users.txt"
+CAMPUS_API_URL = os.getenv("CAMPUS_API_URL", f"{API_BASE}/campus/37/users") # Malaga campus by default
+OUTPUT_FILE = "users/all_campus_users.txt"
 REQUEST_DELAY = 0.5  # delay between requests to avoid rate limiting
 
 def get_token(uid, secret):

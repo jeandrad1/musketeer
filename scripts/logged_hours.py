@@ -6,7 +6,7 @@ import sys
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
@@ -22,7 +22,7 @@ def leer_logins(filename="users/users.txt"):
 
 
 def get_token(uid, secret):
-    # mostrar solo un mask del secret para depuración
+    # show just one mask of the secret for debugging
     print("get_token -> UID:", uid)
     print("get_token -> SECRET mask:", (secret[:4] + "..." + secret[-4:]) if secret else None)
 
