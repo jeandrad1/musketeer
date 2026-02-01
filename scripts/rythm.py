@@ -6,7 +6,7 @@ import sys
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
@@ -91,24 +91,24 @@ def main():
         if project_name == "common_core" and not common_core_started:
             common_core_started = True
             prev_end_date = begin_at  # Use the start of the common core as the first project start date
-            print(f"  → {login} - First Project (Common Core) Start: {begin_at}")
+            print(f"\t{login} - First Project (Common Core) Start: {begin_at}")
             continue  # Skip duration calculation for common core
 
         if begin_at and end_at and prev_end_date:
             # Calculate days between the end date of the previous project and the end date of the current one
             days = calc_days(prev_end_date, end_at)
             if days is not None:
-                print(f"  → {login} - Project: {project_name}")
-                print(f"     Start: {prev_end_date} | End: {end_at} | Duration: {days} days")
+                print(f"\t{login} - Project: {project_name}")
+                print(f"\t\tStart: {prev_end_date} | End: {end_at} | Duration: {days} days")
                 results.append((login, project_name, days))
                 prev_end_date = end_at  # The end date of this project will be the start date for the next project
             else:
-                print(f"  → {login} - Project: {project_name} has invalid dates.")
+                print(f"\n\t{login} - Project: {project_name} has invalid dates.")
         else:
-            print(f"  → {login} - Project: {project_name} has missing dates.")
+            print(f"\n\t{login} - Project: {project_name} has missing dates.")
 
     sorted_results = sorted(results, key=lambda x: x[2], reverse=True)
-    print("\nRANKING")
+    print("\n-- RANKING --")
     for i, (login, project_name, days) in enumerate(sorted_results, 1):
         print(f"{i:2d}. {login} - {project_name}: {days} days")
 
