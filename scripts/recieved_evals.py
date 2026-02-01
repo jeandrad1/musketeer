@@ -1,10 +1,39 @@
 import requests
 import csv
+import os
+import sys
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 API_BASE = "https://api.intra.42.fr/v2"
+BASE_URL = "https://api.intra.42.fr"
+UID = os.getenv("UID")
+SECRET = os.getenv("SECRET")
 
 # Token
-ACCESS_TOKEN = 
+def get_token(uid, secret):
+    # show just one mask of the secret for debugging
+    print("get_token -> UID:", uid)
+    print("get_token -> SECRET mask:", (secret[:4] + "..." + secret[-4:]) if secret else None)
+
+    res = requests.post(f"{BASE_URL}/oauth/token", data={
+        "grant_type": "client_credentials",
+        "client_id": uid,
+        "client_secret": secret,
+    }, timeout=10)
+
+    if res.status_code != 200:
+        print("get_token status:", res.status_code)
+        try:
+            print("get_token response json:", res.json())
+        except Exception:
+            print("get_token raw response:", repr(res.text))
+    res.raise_for_status()
+    return res.json()["access_token"]
+
+ACCESS_TOKEN = get_token(UID, SECRET)
 
 USERNAME = "mfuente-"
 
@@ -51,7 +80,7 @@ def filter_received(evaluations, user_id):
     return [e for e in evaluations if e.get("user", {}).get("id") == user_id]
 
 
-def save_to_csv(evaluations, filename="received_evaluations.csv"):
+def save_to_csv(evaluations, filename="../results/received_evaluations.csv"):
     print(f"Saved in '{filename}'…")
     with open(filename, mode="w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)

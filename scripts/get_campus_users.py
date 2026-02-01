@@ -116,8 +116,8 @@ def main():
         try:
             grade = get_user_grade(login, token)
             if grade:
-                results.append((login))
-                print(f"FOUND -> {grade}")
+                results.append((login, grade))
+                print(f"FOUND : {grade}")
             else:
                 results.append((login, "N/A"))
                 print("N/A")

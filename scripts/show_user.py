@@ -6,8 +6,8 @@ Uso:
   python show_user_json.py <login> [--raw] [--out FILENAME]
 
 Ejemplos:
-  python show_user_json.py sternero
-  python show_user_json.py sternero --out sternero.json
+  python show_user_json.py josehurt
+  python show_user_json.py josehurt --out josehurt.json
 """
 
 import sys
@@ -19,7 +19,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Cargar .env desde el mismo directorio del script
-load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+load_dotenv(dotenv_path=Path(__file__).parent / "../.env")
 
 BASE_URL = "https://api.intra.42.fr"
 API_BASE = "https://api.intra.42.fr/v2"
